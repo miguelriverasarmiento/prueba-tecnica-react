@@ -10,12 +10,13 @@ function App() {
   const [idCharacterState, setIdCharacterState] = useState(1);
   const [details, setDetails] = useState({});
   const [currentSearch, setCurrentSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [errorState, setErrorState] = useState({ hasError: false });
 
   useEffect(() => {
-    getPeople().then((data) => setPeople(data.results))
+    getPeople(page).then(setPeople)
                .catch(handleError);
-  }, [])
+  }, [page])
 
   useEffect(() => {
     getCharacter(idCharacterState)
@@ -44,8 +45,14 @@ function App() {
     setDetails({});
 
     getCurrentSearch(currentSearch)
-      .then(data => setPeople(data.results))
+      .then(setPeople)
       .catch(handleError);
+  }
+
+  const handlePage = (next) => {
+    if(!people.previous && page + next <= 0) return;
+    if(!people.next && page + next >= 9) return;
+    setPage(page + next);
   }
 
   return (
@@ -60,10 +67,15 @@ function App() {
       />
       {errorState.hasError && <p>{errorState.message}</p>}
       <ul>
-        {people.map(character => (
+        {people?.results?.map(character => (
           <li key={character.name} onClick={() => handleInfoPer(character)}>{character.name}</li>
         ))}
       </ul>
+      <section>
+        <button onClick={() => handlePage(-1)}>Prev</button>
+          | {page} |
+        <button onClick={() => handlePage(1)}>Next</button> 
+      </section>
       {details && (
         <aside>
           <h4>{details.name}</h4>
